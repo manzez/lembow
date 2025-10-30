@@ -1,0 +1,14 @@
+{
+  "name": "community-platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "db:push": "pnpm --filter @community/db prisma db push",
+    "db:seed": "pnpm --filter @community/db prisma db seed",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint"
+  }
+}

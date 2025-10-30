@@ -1,0 +1,51 @@
+# Node/Next.js monorepo ignores
+node_modules/
+.pnpm-store/
+.pnp.cjs
+.pnp.loader.mjs
+
+# Next.js
+.next/
+out/
+.vercel/
+
+# Turborepo / build caches
+.turbo/
+.cache/
+
+# Build artifacts
+build/
+dist/
+apps/**/build/
+apps/**/dist/
+packages/**/build/
+packages/**/dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Testing / coverage
+coverage/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ESLint / TypeScript
+.eslintcache
+*.tsbuildinfo
+
+# Misc
+*.swp
+*.swo

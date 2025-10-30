@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Community {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  region      String?
+  logoUrl     String?
+  bannerUrl   String?
+  howToPay    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     Member[]
+  households  Household[]
+  plans       MembershipPlan[]
+  sellers     Seller[]
+  campaigns   Campaign[]
+  events      EventHost[]
+  roles       RoleAssignment[]
+  auditLogs   AuditLog[]
+  obligations Obligation[]
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  email        String?  @unique
+  phone        String?
+  firstName    String
+  lastName     String
+  whatsapp     String?
+  joinDate     DateTime
+  status       MemberStatus @default(ACTIVE)
+  householdId  String?
+  household    Household?   @relation("HouseholdMembers", fields: [householdId], references: [id])
+
+  memberships  MembershipHistory[]
+  rsvps        RSVP[]
+  consents     ConsentEvent[]
+  roles        RoleAssignment[]
+  repHousehold Household? @relation("HouseholdRep")
+  pledges      Pledge[]
+  magicLinks   MagicLinkToken[]
+}
+
+enum MemberStatus {
+  ACTIVE
+  LAPSED
+  PAUSED
+  TRANSFER_PENDING
+}
+
+model Household {
+  id           String    @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  repMemberId  String    @unique
+  rep          Member    @relation("HouseholdRep", fields: [repMemberId], references: [id])
+  dependents   Dependent[]
+  members      Member[]  @relation("HouseholdMembers")
+
+  memberships  MembershipHistory[]
+}
+
+model Dependent {
+  id          String   @id @default(cuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id])
+  name        String
+  relationship String?
+  dob         DateTime?
+}
+
+model MembershipPlan {
+  id           String   @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  name         String
+  frequency    String   // MONTHLY|QUARTERLY|YEARLY|CUSTOM
+  amountMinor  Int      // pence
+  graceDays    Int      @default(0)
+  isFamily     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  
+  memberships  MembershipHistory[]
+}
+
+model MembershipHistory {
+  id           String   @id @default(cuid())
+  memberId     String?
+  member       Member?  @relation(fields: [memberId], references: [id])
+  householdId  String?
+  household    Household? @relation(fields: [householdId], references: [id])
+  planId       String
+  plan         MembershipPlan @relation(fields: [planId], references: [id])
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+}
+
+model Obligation {
+  id            String   @id @default(cuid())
+  communityId   String
+  community     Community @relation(fields: [communityId], references: [id])
+  subjectType   String   // MEMBER|HOUSEHOLD|CAMPAIGN|EVENT
+  subjectId     String
+  type          String   // DUES|PLEDGE|TICKET
+  amountMinor   Int
+  dueAt         DateTime
+  status        String   // DUE|PAID|LATE|CANCELLED
+  createdAt     DateTime @default(now())
+
+  evidences     Evidence[]
+}
+
+model Evidence {
+  id            String   @id @default(cuid())
+  obligationId  String
+  obligation    Obligation @relation(fields: [obligationId], references: [id])
+  kind          String   // SELF_REPORT|ADMIN_NOTE|WEBHOOK
+  method        String   // BANK_TRANSFER|CASH|STANDING_ORDER|OTHER
+  reference     String?
+  amountMinor   Int
+  paidAt        DateTime
+  status        String   // PENDING|APPROVED|REJECTED
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model Campaign {
+  id           String   @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  name         String
+  goalAmount   Int      // pence
+  startAt      DateTime
+  endAt        DateTime?
+  description  String?
+  pledges      Pledge[]
+}
+
+model Pledge {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id])
+  amountMinor Int
+  status      String   // PLEDGED|PAID|CANCELLED
+  createdAt   DateTime @default(now())
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  startAt      DateTime
+  endAt        DateTime?
+  venue        String?
+  wheelchairAccess    Boolean @default(false)
+  stepFree            Boolean @default(false)
+  interpreterAvailable Boolean @default(false)
+  sensoryFriendly     Boolean @default(false)
+  parkingInfo         String?
+  rsvps        RSVP[]
+  hosts        EventHost[]
+}
+
+model EventHost {
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id])
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  role        String    // LEAD|COHOST
+
+  @@id([eventId, communityId])
+}
+
+model RSVP {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  status    String   // GOING|MAYBE|DECLINED
+  guests    Int      @default(0)
+}
+
+model Seller {
+  id           String   @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  name         String
+  whatsapp     String
+  area         String?
+  categories   String[]
+  description  String?
+  verified     Boolean  @default(false)
+  products     Product[]
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id])
+  name      String
+  priceMinor Int
+  unit      String?
+  isActive  Boolean @default(true)
+}
+
+model ConsentEvent {
+  id         String   @id @default(cuid())
+  memberId   String
+  member     Member   @relation(fields: [memberId], references: [id])
+  purpose    String   // MEMBERSHIP_ADMIN|MARKETING|MEDIA
+  channel    String   // WHATSAPP|SMS|EMAIL
+  granted    Boolean
+  occurredAt DateTime @default(now())
+}
+
+model RoleAssignment {
+  id           String   @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  memberId     String
+  member       Member   @relation(fields: [memberId], references: [id])
+  role         String   // COMPANY_ADMIN|COMMUNITY_ADMIN|TREASURER|SECRETARY|MODERATOR|MEMBER
+  startsAt     DateTime @default(now())
+  endsAt       DateTime?
+}
+
+model AuditLog {
+  id           String     @id @default(cuid())
+  communityId  String?
+  community    Community? @relation(fields: [communityId], references: [id])
+  actorUserId  String?
+  action       String
+  entityType   String
+  entityId     String?
+  diffJson     String?
+  createdAt    DateTime   @default(now())
+}
+
+model MagicLinkToken {
+  id           String   @id @default(cuid())
+  memberId     String
+  member       Member   @relation(fields: [memberId], references: [id])
+  purpose      String   // AUTH|DUES|PLEDGE|EVENT
+  token        String   @unique
+  expiresAt    DateTime
+  consumedAt   DateTime?
+}
