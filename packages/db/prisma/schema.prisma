@@ -7,18 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Community {
+model Organization {
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
-  region      String?
+  description String?
   logoUrl     String?
   bannerUrl   String?
-  howToPay    String?
+  website     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members     Member[]
+  communities     Community[]
+  organizationRoles OrganizationRole[]
+}
+
+model Community {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  parentId       String?
+  parent         Community? @relation("CommunityBranches", fields: [parentId], references: [id])
+  branches       Community[] @relation("CommunityBranches")
+  region         String?
+  city           String?
+  country        String?
+  description    String?
+  logoUrl        String?
+  bannerUrl      String?
+  howToPay       String?
+  meetingLocation String?
+  meetingSchedule String?
+  contactInfo    String?
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  memberships CommunityMembership[]
   households  Household[]
   plans       MembershipPlan[]
   sellers     Seller[]
@@ -27,29 +54,107 @@ model Community {
   roles       RoleAssignment[]
   auditLogs   AuditLog[]
   obligations Obligation[]
+  meetingMinutes MeetingMinutes[]
+  notifications Notification[]
+  emailSubscriptions EmailSubscription[]
+  photos CommunityPhoto[]
+  
+  // Financial tracking
+  financialCategories FinancialCategory[]
+  financialTransactions FinancialTransaction[]
+  financialBudget FinancialBudget?
+
+  // Cross-community collaboration
+  sentInvitations     CommunityEventInvitation[] @relation("InvitingCommunity")
+  receivedInvitations CommunityEventInvitation[] @relation("InvitedCommunity")
+  collaborations      CommunityCollaboration[] @relation("PrimaryCommunity")
+  partnerCollaborations CommunityCollaboration[] @relation("PartnerCommunity")
+  
+  // Donations and fundraising
+  donations           CommunityDonation[]
+  donationGoals       DonationGoal[]
+
+  @@index([organizationId])
+  @@index([parentId])
 }
 
 model Member {
-  id           String   @id @default(cuid())
-  communityId  String
-  community    Community @relation(fields: [communityId], references: [id])
-  email        String?  @unique
-  phone        String?
-  firstName    String
-  lastName     String
-  whatsapp     String?
-  joinDate     DateTime
-  status       MemberStatus @default(ACTIVE)
-  householdId  String?
-  household    Household?   @relation("HouseholdMembers", fields: [householdId], references: [id])
+  id          String   @id @default(cuid())
+  // Keep backward compatibility fields
+  communityId String?  // Make optional for backward compatibility
+  email       String?  @unique
+  phone       String?
+  firstName   String
+  lastName    String
+  whatsapp    String?
+  joinDate    DateTime @default(now()) // Keep for backward compatibility
+  status      MemberStatus @default(ACTIVE) // Keep for backward compatibility
+  householdId String?  // Keep for backward compatibility
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  isActive    Boolean @default(true)
 
-  memberships  MembershipHistory[]
-  rsvps        RSVP[]
-  consents     ConsentEvent[]
-  roles        RoleAssignment[]
-  repHousehold Household? @relation("HouseholdRep")
-  pledges      Pledge[]
-  magicLinks   MagicLinkToken[]
+  // New multi-community relationships
+  communities     CommunityMembership[]
+  memberships     MembershipHistory[]
+  rsvps           RSVP[]
+  consents        ConsentEvent[]
+  roles           RoleAssignment[]
+  organizationRoles OrganizationRole[]
+  pledges         Pledge[]
+  magicLinks      MagicLinkToken[]
+  createdMeetingMinutes MeetingMinutes[]
+  approvedMeetingMinutes MeetingMinutes[] @relation("ApprovedMinutes")
+  
+  // Notification relationships
+  notifications   Notification[]
+  emailSubscriptions EmailSubscription[]
+  
+  // Photo uploads
+  uploadedPhotos  CommunityPhoto[]
+  
+  // Financial management
+  approvedTransactions FinancialTransaction[]
+  createdBudgets  FinancialBudget[] @relation("BudgetCreator")
+  approvedBudgets FinancialBudget[]
+  
+  // Cross-community collaboration
+  sentInvitations CommunityEventInvitation[] 
+  respondedInvitations CommunityEventInvitation[] @relation("InvitationResponder")
+  initiatedCollaborations CommunityCollaboration[]
+  
+  // Backward compatibility relationships
+  household       Household? @relation("HouseholdMembers", fields: [householdId], references: [id])
+  repHouseholds   Household[] @relation("HouseholdRep")
+}
+
+model CommunityMembership {
+  id          String   @id @default(cuid())
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id])
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  joinDate    DateTime @default(now())
+  status      MemberStatus @default(ACTIVE)
+  role        String?  // Optional community-specific role
+  isPrimary   Boolean @default(false) // Primary community for the member
+  
+  @@unique([memberId, communityId])
+  @@index([memberId])
+  @@index([communityId])
+}
+
+model OrganizationRole {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  memberId       String
+  member         Member   @relation(fields: [memberId], references: [id])
+  role           String   // ORGANIZATION_ADMIN|SUPER_ADMIN|BRANCH_COORDINATOR
+  startsAt       DateTime @default(now())
+  endsAt         DateTime?
+  
+  @@unique([organizationId, memberId, role])
 }
 
 enum MemberStatus {
@@ -63,12 +168,15 @@ model Household {
   id           String    @id @default(cuid())
   communityId  String
   community    Community @relation(fields: [communityId], references: [id])
-  repMemberId  String    @unique
+  repMemberId  String
   rep          Member    @relation("HouseholdRep", fields: [repMemberId], references: [id])
+  name         String?   // Optional household name
   dependents   Dependent[]
   members      Member[]  @relation("HouseholdMembers")
-
   memberships  MembershipHistory[]
+
+  @@index([communityId])
+  @@index([repMemberId])
 }
 
 model Dependent {
@@ -166,13 +274,39 @@ model Event {
   startAt      DateTime
   endAt        DateTime?
   venue        String?
+  address      String?
+  city         String?
+  postcode     String?
+  country      String?
+  latitude     Float?
+  longitude    Float?
+  imageUrl     String?
+  maxAttendees Int?
+  price        String?   // "Free", "£10", "Members Only", etc.
+  category     String?   // "Cultural", "Meeting", "Social", etc.
+  status       String    @default("ACTIVE") // ACTIVE, CANCELLED, POSTPONED
   wheelchairAccess    Boolean @default(false)
   stepFree            Boolean @default(false)
   interpreterAvailable Boolean @default(false)
   sensoryFriendly     Boolean @default(false)
   parkingInfo         String?
+  contactEmail        String?
+  contactPhone        String?
+  requirements        String? // Any special requirements or items to bring
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
   rsvps        RSVP[]
   hosts        EventHost[]
+  meetingMinutes MeetingMinutes?
+  agendas      MeetingAgenda[]
+  photos       CommunityPhoto[]
+  
+  // Cross-community invitations
+  communityInvitations CommunityEventInvitation[]
+  
+  // Financial tracking
+  transactions FinancialTransaction[]
 }
 
 model EventHost {
@@ -193,6 +327,151 @@ model RSVP {
   member    Member   @relation(fields: [memberId], references: [id])
   status    String   // GOING|MAYBE|DECLINED
   guests    Int      @default(0)
+  dietaryRequirements String?
+  accessibilityNeeds  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([eventId, memberId])
+}
+
+model CommunityEventInvitation {
+  id                String    @id @default(cuid())
+  eventId           String
+  event             Event     @relation(fields: [eventId], references: [id])
+  invitingCommunityId String
+  invitingCommunity Community @relation("InvitingCommunity", fields: [invitingCommunityId], references: [id])
+  invitedCommunityId  String
+  invitedCommunity  Community @relation("InvitedCommunity", fields: [invitedCommunityId], references: [id])
+  status            String    @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+  message           String?   // Optional message from inviting community
+  responseMessage   String?   // Optional response from invited community
+  invitedBy         String    // Member ID of person who sent invitation
+  invitedByMember   Member    @relation(fields: [invitedBy], references: [id])
+  respondedBy       String?   // Member ID of person who responded
+  respondedByMember Member?   @relation("InvitationResponder", fields: [respondedBy], references: [id])
+  specialOffers     String?   // Special pricing or arrangements for invited community
+  estimatedAttendees Int?     // How many people the invited community expects to bring
+  collaborationType String?   // ATTENDEE, CO_HOST, SPONSOR, CULTURAL_PARTNER
+  expiresAt         DateTime? // When invitation expires
+  createdAt         DateTime  @default(now())
+  respondedAt       DateTime?
+  
+  // Link to ongoing collaboration if this is part of a larger partnership
+  collaborationId   String?
+  collaboration     CommunityCollaboration? @relation(fields: [collaborationId], references: [id])
+  
+  @@unique([eventId, invitedCommunityId])
+}
+
+model CommunityCollaboration {
+  id                String    @id @default(cuid())
+  primaryCommunityId String
+  primaryCommunity  Community @relation("PrimaryCommunity", fields: [primaryCommunityId], references: [id])
+  partnerCommunityId String
+  partnerCommunity  Community @relation("PartnerCommunity", fields: [partnerCommunityId], references: [id])
+  collaborationType String    // EVENT_COLLABORATION, JOINT_INITIATIVE, CULTURAL_EXCHANGE, CHARITY_PARTNERSHIP
+  title             String    // Name of the collaboration
+  description       String?   // Details of what they collaborated on
+  region            String?   // UK region where collaboration took place
+  startDate         DateTime  // When collaboration began
+  endDate           DateTime? // When collaboration ended (null if ongoing)
+  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  
+  // Success metrics
+  totalAttendees    Int?      // Combined attendance across communities
+  eventsHeld        Int       @default(0) // Number of collaborative events
+  fundraisingAmount Float?    // Money raised together (in pounds)
+  mediaReach        Int?      // Social media reach/impressions
+  memberSatisfaction Float?   // Average satisfaction score (1-5)
+  culturalImpact    String?   // Qualitative impact description
+  
+  // Recognition and achievements
+  featuredInMedia   Boolean   @default(false)
+  governmentRecognition Boolean @default(false)
+  awardReceived     String?   // Any awards or recognition received
+  pressClippings    String[]  // URLs to media coverage
+  photos            String[]  // URLs to collaboration photos
+  
+  // Administrative
+  initiatedBy       String    // Member ID who started the collaboration
+  initiator         Member    @relation(fields: [initiatedBy], references: [id])
+  keyContacts       String[]  // Member IDs of key people from both communities
+  nextMilestone     String?   // Next planned activity or goal
+  milestoneDate     DateTime? // When next milestone is planned
+  
+  // UK-specific tracking
+  ukRegion          String?   // England, Scotland, Wales, Northern Ireland
+  localAuthority    String?   // Local council area
+  parliamentaryConstituency String? // MP constituency for government reporting
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Related events and activities
+  collaborationEvents CommunityEventInvitation[]
+  
+  @@unique([primaryCommunityId, partnerCommunityId, title])
+  @@index([ukRegion])
+  @@index([status])
+  @@index([collaborationType])
+}
+
+model CommunityDonation {
+  id              String   @id @default(cuid())
+  communityId     String
+  donorName       String?  // null if anonymous
+  donorEmail      String
+  amount          Float
+  currency        String   @default("GBP")
+  
+  // Cause and purpose
+  cause           String?  // which specific cause they're supporting
+  message         String?  // optional message from donor
+  isAnonymous     Boolean  @default(false)
+  isRecurring     Boolean  @default(false)
+  
+  // Payment details
+  paymentId       String?  // external payment processor ID
+  paymentStatus   String   @default("pending") // "pending", "completed", "failed", "refunded"
+  paymentMethod   String?  // "card", "paypal", "bank_transfer"
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  @@index([communityId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model DonationGoal {
+  id              String   @id @default(cuid())
+  communityId     String
+  title           String
+  description     String?
+  targetAmount    Float
+  currentAmount   Float    @default(0)
+  currency        String   @default("GBP")
+  
+  // Timeline
+  startDate       DateTime @default(now())
+  endDate         DateTime?
+  
+  // Status
+  isActive        Boolean  @default(true)
+  isCompleted     Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  @@index([communityId])
+  @@index([isActive])
 }
 
 model Seller {
@@ -259,4 +538,312 @@ model MagicLinkToken {
   token        String   @unique
   expiresAt    DateTime
   consumedAt   DateTime?
+  isUsed       Boolean  @default(false)
+}
+
+model MeetingMinutes {
+  id                    String    @id @default(cuid())
+  communityId           String
+  community             Community @relation(fields: [communityId], references: [id])
+  eventId               String?   @unique
+  event                 Event?    @relation(fields: [eventId], references: [id])
+  title                 String
+  meetingDate           DateTime
+  location              String?
+  agenda                String?   // JSON string of agenda items (legacy)
+  summary               String?   // Meeting summary/overview
+  decisions             String?   // Key decisions made
+  actionItems           String?   // JSON string of action items
+  attendees             String?   // JSON string of attendee member IDs
+  absentees             String?   // JSON string of absent member IDs  
+  documents             String?   // JSON string of document URLs/paths
+  voiceNotes            String?   // Main transcribed voice notes
+  isPublicOnCommunity   Boolean   @default(false) // Show on community page
+  isSharedWithMembers   Boolean   @default(true)  // Auto-share with members
+  createdBy             String
+  creator               Member    @relation(fields: [createdBy], references: [id])
+  isApproved            Boolean   @default(false)
+  approvedBy            String?
+  approver              Member?   @relation("ApprovedMinutes", fields: [approvedBy], references: [id])
+  approvedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  agendaItems           MeetingAgenda[]
+  voiceRecordings       VoiceRecording[]
+
+  @@index([communityId, meetingDate])
+  @@index([eventId])
+}
+
+model MeetingAgenda {
+  id               String    @id @default(cuid())
+  eventId          String?
+  event            Event?    @relation(fields: [eventId], references: [id])
+  meetingMinutesId String?
+  meetingMinutes   MeetingMinutes? @relation(fields: [meetingMinutesId], references: [id])
+  title            String
+  description      String?
+  orderIndex       Int       @default(0)
+  duration         Int?      // Expected duration in minutes
+  presenter        String?   // Member ID or name
+  status           AgendaStatus @default(PENDING)
+  notes            String?   // Notes taken during this agenda item
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([eventId])
+  @@index([meetingMinutesId])
+}
+
+model VoiceRecording {
+  id               String    @id @default(cuid())
+  meetingMinutesId String
+  meetingMinutes   MeetingMinutes @relation(fields: [meetingMinutesId], references: [id])
+  agendaItemId     String?   // Optional: link to specific agenda item
+  fileName         String
+  filePath         String    // Storage path for audio file
+  fileUrl          String?   // Public URL if using cloud storage
+  fileSize         Int?      // File size in bytes
+  duration         Int?      // Duration in seconds
+  transcription    String?   // AI-generated transcription
+  transcriptionStatus TranscriptionStatus @default(PENDING)
+  recordedBy       String    // Member ID
+  recordedAt       DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([meetingMinutesId])
+}
+
+enum AgendaStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum TranscriptionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model NotificationTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subject     String
+  htmlContent String
+  textContent String?
+  category    String   // MEETING|WELCOME|REMINDER|UPDATE|SYSTEM
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  notifications Notification[]
+}
+
+model Notification {
+  id           String              @id @default(cuid())
+  templateId   String?
+  template     NotificationTemplate? @relation(fields: [templateId], references: [id])
+  communityId  String?
+  community    Community?          @relation(fields: [communityId], references: [id])
+  recipientId  String
+  recipient    Member              @relation(fields: [recipientId], references: [id])
+  type         String              // EMAIL|SMS|PUSH|IN_APP
+  channel      String              // MEETING_REMINDER|MEETING_MINUTES|WELCOME|SYSTEM_UPDATE
+  subject      String
+  content      String
+  htmlContent  String?
+  priority     String              @default("NORMAL") // HIGH|NORMAL|LOW
+  status       String              @default("PENDING") // PENDING|SENT|FAILED|DELIVERED|READ
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  readAt       DateTime?
+  failureReason String?
+  metadata     String?             // JSON string for additional data
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  emailLogs EmailLog[]
+
+  @@index([recipientId, status])
+  @@index([communityId, type])
+  @@index([scheduledFor])
+}
+
+model EmailLog {
+  id             String        @id @default(cuid())
+  notificationId String?
+  notification   Notification? @relation(fields: [notificationId], references: [id])
+  messageId      String?       // Email provider message ID
+  fromEmail      String
+  toEmail        String
+  subject        String
+  htmlContent    String?
+  textContent    String?
+  status         String        // QUEUED|SENT|DELIVERED|BOUNCED|FAILED|OPENED|CLICKED
+  provider       String        // GMAIL|SMTP|SENDGRID|MAILGUN
+  providerResponse String?     // JSON response from email provider
+  deliveredAt    DateTime?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  bouncedAt      DateTime?
+  failureReason  String?
+  retryCount     Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([toEmail, status])
+  @@index([messageId])
+  @@index([createdAt])
+}
+
+model EmailSubscription {
+  id          String    @id @default(cuid())
+  memberId    String
+  member      Member    @relation(fields: [memberId], references: [id])
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id])
+  email       String
+  type        String    // MEETING_NOTIFICATIONS|MEETING_MINUTES|COMMUNITY_UPDATES|ALL
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([memberId, email, type])
+  @@index([email, isActive])
+}
+
+model CommunityPhoto {
+  id           String    @id @default(cuid())
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id])
+  eventId      String?   // Optional: link to specific event
+  event        Event?    @relation(fields: [eventId], references: [id])
+  title        String?   // Photo caption/title
+  description  String?   // Photo description
+  fileName     String    // Original filename
+  filePath     String    // Storage path
+  fileUrl      String    // Public URL
+  fileSize     Int?      // File size in bytes
+  mimeType     String    // image/jpeg, image/png, etc.
+  width        Int?      // Image width in pixels
+  height       Int?      // Image height in pixels
+  orderIndex   Int       @default(0) // For sorting/ordering photos
+  isPublic     Boolean   @default(true) // Show on public community page
+  isFeatured   Boolean   @default(false) // Featured/hero photos
+  uploadedBy   String    // Member who uploaded
+  uploader     Member    @relation(fields: [uploadedBy], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([communityId, isPublic, orderIndex])
+  @@index([eventId])
+  @@index([isFeatured, isPublic])
+}
+
+// Financial tracking models for budget allocation and spending
+model FinancialCategory {
+  id          String @id @default(cuid())
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  name        String // e.g., "Refreshments", "Community Outreach", "Sports", "Stationary", "Music"
+  color       String // Hex color for pie chart display
+  percentage  Float  @default(0) // Percentage allocation of budget
+  budgetAmount Int   @default(0) // Amount in pence allocated to this category
+  spentAmount  Int   @default(0) // Amount in pence already spent
+  description String?
+  isActive    Boolean @default(true)
+  order       Int    @default(0) // For sorting categories
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  transactions FinancialTransaction[]
+  
+  @@unique([communityId, name])
+  @@index([communityId, isActive])
+}
+
+model FinancialTransaction {
+  id          String @id @default(cuid())
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  categoryId  String
+  category    FinancialCategory @relation(fields: [categoryId], references: [id])
+  eventId     String? // Optional link to specific event
+  event       Event? @relation(fields: [eventId], references: [id])
+  
+  description String
+  amount      Int    // Amount in pence (positive for expenses, negative for refunds)
+  date        DateTime
+  receiptUrl  String? // Link to receipt/invoice
+  approvedBy  String
+  approver    Member @relation(fields: [approvedBy], references: [id])
+  
+  // Transaction metadata
+  vendor      String?
+  invoiceNumber String?
+  paymentMethod String? // "Bank Transfer", "Cash", "Card", etc.
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([communityId, date])
+  @@index([categoryId])
+  @@index([eventId])
+}
+
+model FinancialBudget {
+  id            String @id @default(cuid())
+  communityId   String @unique
+  community     Community @relation(fields: [communityId], references: [id])
+  
+  // Budget periods
+  year          Int
+  totalBudget   Int    @default(0) // Total annual budget in pence
+  
+  // Budget status
+  isApproved    Boolean @default(false)
+  approvedBy    String?
+  approver      Member? @relation(fields: [approvedBy], references: [id])
+  approvedAt    DateTime?
+  
+  // Metadata
+  notes         String?
+  createdBy     String
+  creator       Member @relation("BudgetCreator", fields: [createdBy], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([communityId, year])
+  @@index([year])
+}
+
+// Community Skills/Jobs listings (directory of affordable services and jobs per community)
+model CommunitySkillListing {
+  id           String   @id @default(cuid())
+  communityId  String?
+  community    Community? @relation(fields: [communityId], references: [id])
+
+  title        String
+  description  String?
+  category     String?
+  type         String   // SKILL | JOB
+  priceOrRate  String?
+  contactName  String?
+  phone        String
+  email        String?
+  whatsapp     String?
+  city         String?
+  region       String?
+  photos       String[]
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([communityId, type, isActive])
 }

@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
-import SearchComponent from './SearchComponent'
 
 interface NavigationItem {
   label: string
@@ -138,11 +137,6 @@ export default function MobileNavigation() {
             </div>
           </div>
           <p className="text-white/80 text-sm mb-4">Explore the Lembo platform</p>
-          
-          {/* Search in Navigation */}
-          <div className="mb-2">
-            <SearchComponent />
-          </div>
         </div>
 
         {/* Navigation Items */}
@@ -188,7 +182,6 @@ export default function MobileNavigation() {
 
       {/* Desktop Navigation Indicator */}
       <div className="hidden lg:flex fixed top-6 right-6 z-50 items-center space-x-4">
-        <SearchComponent />
         <ThemeToggle />
         <div className="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-6 py-3 rounded-2xl shadow-2xl backdrop-blur-sm border-2 border-white/20">
           <div className="flex items-center space-x-3">

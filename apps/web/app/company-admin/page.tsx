@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import MeetingTranscriber from '../components/MeetingTranscriber'
 
 // Sample platform-wide data - would come from API in real app
 const platformStats = {
@@ -135,10 +136,11 @@ export default function CompanyAdminPage() {
       {/* Navigation Tabs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8 py-4">
+          <nav className="flex space-x-8 py-4 overflow-x-auto">
             {[
               { id: 'dashboard', name: 'Platform Overview', icon: '🌍' },
               { id: 'communities', name: 'Communities', icon: '🏛️' },
+              { id: 'ai-transcriber', name: 'AI Transcriber', icon: '🎙️' },
               { id: 'approvals', name: 'Approvals', icon: '✅' },
               { id: 'analytics', name: 'Analytics', icon: '📊' },
               { id: 'billing', name: 'Billing', icon: '💰' },
@@ -293,6 +295,19 @@ export default function CompanyAdminPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Transcriber Tab */}
+        {activeTab === 'ai-transcriber' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Meeting Transcriber</h2>
+                <p className="text-gray-600">Record platform admin meetings with real-time AI transcription and automatic minute generation</p>
+              </div>
+              <MeetingTranscriber communityId="platform-admin" communityName="Lembo Platform Admin" />
             </div>
           </div>
         )}

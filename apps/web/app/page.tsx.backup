@@ -1,0 +1,745 @@
+'use client'
+
+import Link from 'next/link'
+import { useState } from 'react'
+import { Search, MapPin, Users, Calendar, ArrowRight, Phone, Mail, MessageSquare, Handshake } from 'lucide-react'
+import { ALL_COMMUNITIES, CATEGORIES, REGIONS } from '../lib/communities-data'
+
+export default function CommunitiesHome() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedRegion, setSelectedRegion] = useState('All')
+
+  const filteredCommunities = ALL_COMMUNITIES.filter(community => {
+    const matchesSearch = community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         community.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         community.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'All' || community.category === selectedCategory
+    const matchesRegion = selectedRegion === 'All' || community.region === selectedRegion
+    
+    return matchesSearch && matchesCategory && matchesRegion
+  })
+
+  const totalMembers = ALL_COMMUNITIES.reduce((sum, community) => sum + community.members, 0)
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Enhanced Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-violet-800 to-purple-900"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-violet-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+          <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+          
+          {/* Floating Elements */}
+          <div className="absolute top-32 left-1/4 animate-float">
+            <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center transform rotate-12">
+              <Users className="w-8 h-8 text-white/80" />
+            </div>
+          </div>
+          <div className="absolute top-48 right-1/4 animate-float animation-delay-1000">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-12">
+              <MapPin className="w-6 h-6 text-white/80" />
+            </div>
+          </div>
+          <div className="absolute top-64 left-1/6 animate-float animation-delay-2000">
+            <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center transform rotate-6">
+              <Calendar className="w-7 h-7 text-white/80" />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6 py-20">
+          {/* Header Content */}
+          <div className="text-center text-white mb-16">
+            {/* Community Stats Banner */}
+            <div className="inline-flex items-center gap-8 bg-white/10 backdrop-blur-sm rounded-full px-8 py-4 mb-8 border border-white/20">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">{ALL_COMMUNITIES.length} Active Communities</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="text-sm font-medium">{totalMembers.toLocaleString()}+ Members</span>
+    nextEvent: 'New Yam Festival - December 28, 2025'
+  },
+  {
+    id: 2,
+    name: 'Merseyside Yorùbá Community Association',
+    location: 'Liverpool, Merseyside',
+    region: 'North West England',
+    category: 'Cultural',
+    members: 187,
+    imageUrl: getCommunityImage(2),
+    description: 'Vibrant Yorùbá community preserving culture and traditions in Merseyside.',
+    slug: 'merseyside-yoruba',
+    established: '2010',
+    meetingLocation: '7 Vyner Road South, Liverpool, L25 3PU',
+    contact: {
+      email: 'merseysideyoruba@gmail.com',
+      phone: '+44 7952 058 641',
+      whatsapp: '+44 7952 058 641'
+    },
+    activities: ['Cultural celebrations', 'Yorùbá language classes', 'Community outreach', 'Youth programs'],
+    nextEvent: 'Yorùbá Day Celebration - December 14, 2025'
+  },
+  {
+    id: 3,
+    name: 'Yoruba Foundation',
+    location: 'London, England',
+    region: 'London',
+    category: 'Cultural',
+    members: 445,
+    imageUrl: getCommunityImage(3),
+    description: 'Established foundation promoting Yoruba heritage and community development across the UK.',
+    slug: 'yoruba-foundation',
+    established: '2008',
+    meetingLocation: '89A Kingsland High Street, London E8 2PB',
+    contact: {
+      email: 'info@yorubafoundation.org.uk',
+      phone: '020 7249 1222',
+      whatsapp: '+44 7799 456123'
+    },
+    activities: ['Heritage preservation', 'Educational programs', 'Cultural events', 'Community support'],
+    nextEvent: 'Annual Heritage Gala - January 18, 2026'
+  },
+  {
+    id: 4,
+    name: 'National Association of Nigerian Communities UK',
+    location: 'Leeds, West Yorkshire',
+    region: 'North England',
+    category: 'National Organization',
+    members: 1250,
+    imageUrl: getCommunityImage(4),
+    description: 'Umbrella organization representing Nigerian communities across the United Kingdom.',
+    slug: 'nanc-uk',
+    established: '2005',
+    meetingLocation: '170 Beeston Road, Leeds LS11 8QD',
+    contact: {
+      email: 'secretary@nancuk.org',
+      phone: '+44 7941 945 765',
+      whatsapp: '+44 7941 945 765'
+    },
+    activities: ['Policy advocacy', 'Community coordination', 'Cultural events', 'Youth development'],
+    nextEvent: 'Annual General Meeting - February 15, 2026'
+  },
+  {
+    id: 5,
+    name: 'Westminster Bangladeshi Association',
+    location: 'London, England',
+    region: 'London',
+    category: 'Cultural',
+    members: 356,
+    imageUrl: getCommunityImage(5),
+    description: 'Supporting the Bangladeshi community in Westminster with cultural and social services.',
+    slug: 'westminster-bangladeshi',
+    established: '2000',
+    meetingLocation: 'Pimlico Resource Centre, London SW1V 3RL',
+    contact: {
+      email: 'wbasw1@aol.com',
+      phone: '020 7828 6500',
+      whatsapp: '+44 7825 678901'
+    },
+    activities: ['Community welfare', 'Cultural programs', 'Social services', 'Integration support'],
+    nextEvent: 'Pohela Boishakh Celebration - April 14, 2026'
+  },
+  {
+    id: 6,
+    name: 'UK Bangladesh Catalysts of Commerce & Industry',
+    location: 'London, England',
+    region: 'London',
+    category: 'Business',
+    members: 289,
+    imageUrl: getCommunityImage(6),
+    description: 'Promoting business excellence and entrepreneurship within the Bangladeshi community.',
+    slug: 'ukbcci',
+    established: '1998',
+    meetingLocation: 'Unit S1, Montefiore Centre, Hanbury Street, London E1 5HZ',
+    contact: {
+      email: 'info@ukbcci.org.uk',
+      phone: '020 7247 2331',
+      whatsapp: '+44 7799 234567'
+    },
+    activities: ['Business networking', 'Trade promotion', 'Entrepreneurship support', 'Professional development'],
+    nextEvent: 'Business Excellence Awards - March 22, 2026'
+  },
+  {
+    id: 7,
+    name: 'Nigerian Community Association (Liverpool)',
+    location: 'Liverpool, Merseyside',
+    region: 'North West England',
+    category: 'Cultural',
+    members: 167,
+    imageUrl: getCommunityImage(7),
+    description: 'Fostering unity and cultural preservation within Liverpool\'s Nigerian community.',
+    slug: 'nigerian-liverpool',
+    established: '2012',
+    meetingLocation: '64 Upper Parliament Street, Liverpool L8 7LF',
+    contact: {
+      email: 'tonymadume@hotmail.co.uk',
+      phone: '07507 751918',
+      whatsapp: '07507 751918'
+    },
+    activities: ['Cultural celebrations', 'Community support', 'Youth mentoring', 'Social events'],
+    nextEvent: 'Independence Day Celebration - October 1, 2025'
+  },
+  {
+    id: 8,
+    name: 'Bengali Association Midlands',
+    location: 'Birmingham, West Midlands',
+    region: 'West Midlands',
+    category: 'Cultural',
+    members: 412,
+    imageUrl: getCommunityImage(8),
+    description: 'Serving the Bengali community across the Midlands with cultural and social programs.',
+    slug: 'bengali-midlands',
+    established: '2003',
+    meetingLocation: 'Heath Street, Winson Green, Birmingham B18 4AG',
+    contact: {
+      email: 'info@bengali.org.uk',
+      phone: '0121 455 6874',
+      whatsapp: '+44 7825 567890'
+    },
+    activities: ['Language preservation', 'Cultural festivals', 'Community welfare', 'Educational support'],
+    nextEvent: 'Bengali Cultural Festival - January 25, 2026'
+  },
+  {
+    id: 9,
+    name: 'Ghana Union UK',
+    location: 'London, England',
+    region: 'London',
+    category: 'Cultural',
+    members: 523,
+    imageUrl: getCommunityImage(9),
+    description: 'Uniting Ghanaians across the UK through cultural preservation and community support.',
+    slug: 'ghana-union-uk',
+    established: '1995',
+    meetingLocation: '12 FinSpace, 225-229 Seven Sisters Road, London N4 2DA',
+    contact: {
+      email: 'info@ghanaunion.org.uk',
+      phone: '020 7263 3224',
+      whatsapp: '+44 7799 123456'
+    },
+    activities: ['Cultural events', 'Community development', 'Youth programs', 'Business networking'],
+    nextEvent: 'Ghana Independence Day - March 6, 2026'
+  },
+  {
+    id: 10,
+    name: 'British Somali Community Centre',
+    location: 'London, England',
+    region: 'London',
+    category: 'Cultural',
+    members: 334,
+    imageUrl: getCommunityImage(10),
+    description: 'Supporting the Somali community with cultural programs and integration services.',
+    slug: 'british-somali',
+    established: '2007',
+    meetingLocation: '7-9 Crowndale Road, London NW1 1TU',
+    contact: {
+      email: 'info@britishsomali.org',
+      phone: '020 7383 2803',
+      whatsapp: '+44 7825 789012'
+    },
+    activities: ['Integration support', 'Cultural preservation', 'Youth services', 'Community advocacy'],
+    nextEvent: 'Somali Heritage Day - February 8, 2026'
+  },
+  {
+    id: 11,
+    name: 'Bangladesh Welfare Association Croydon',
+    location: 'Croydon, London',
+    region: 'London',
+    category: 'Welfare',
+    members: 250,
+    imageUrl: getCommunityImage(11),
+    description: 'Providing welfare and support services to the Bangladeshi community in Croydon.',
+    slug: 'bwac-croydon',
+    established: '1985',
+    meetingLocation: '82 London Road, Croydon, CR0 2TB',
+    contact: {
+      email: 'bwac786@gmail.com',
+      phone: '020 8684 0272',
+      whatsapp: '07870 636 603'
+    },
+    activities: ['Welfare advice', 'Community support', 'Social events', 'Cultural programs'],
+    nextEvent: 'Annual Community Fair - May 10, 2026'
+  },
+  {
+    id: 12,
+    name: 'Muslim Association of Nigeria (London)',
+    location: 'London, England',
+    region: 'London',
+    category: 'Religious',
+    members: 600,
+    imageUrl: getCommunityImage(12),
+    description: 'A leading religious organization serving the Nigerian Muslim community in London.',
+    slug: 'manuk-london',
+    established: '1974',
+    meetingLocation: '365 Old Kent Road, London SE1 5JH',
+    contact: {
+      email: 'secretariat@manuk.org',
+      phone: '020 7237 0009',
+      whatsapp: '+44 7987 654321'
+    },
+    activities: ['Religious services', 'Community outreach', 'Educational programs', 'Youth development'],
+    nextEvent: 'Eid al-Fitr Celebration - April 20, 2026'
+  },
+  {
+    id: 13,
+    name: 'Ogwa Community Association of Britain',
+    location: 'London, England',
+    region: 'London',
+    category: 'Cultural',
+    members: 150,
+    imageUrl: getCommunityImage(13),
+    description: 'Bringing together the Ogwa diaspora in Britain to promote cultural heritage.',
+    slug: 'ogwa-britain',
+    established: '2009',
+    meetingLocation: '110 Stamford Hill Community Centre Estate, London N16 6RS',
+    contact: {
+      email: 'info@ogwacommunity.co.uk',
+      phone: '+44 7890 123456',
+      whatsapp: '+44 7890 123456'
+    },
+    activities: ['Cultural events', 'Community support', 'Social gatherings', 'Youth mentoring'],
+    nextEvent: 'Ogwa Day - August 9, 2025'
+  },
+  {
+    id: 14,
+    name: 'Ocean Somali Community Association',
+    location: 'London, England',
+    region: 'London',
+    category: 'Welfare',
+    members: 280,
+    imageUrl: getCommunityImage(14),
+    description: 'Empowering the Somali community in London through various support and development programs.',
+    slug: 'osca-london',
+    established: '2002',
+    meetingLocation: 'Railway Arches 420-421 Burdett Road, London E3 4AA',
+    contact: {
+      email: 'info@oceansomali.org.uk',
+      phone: '020 7987 5833',
+      whatsapp: '+44 7765 432109'
+    },
+    activities: ['Youth services', 'Employment support', 'Health and wellbeing', 'Community advocacy'],
+    nextEvent: 'Youth Empowerment Workshop - June 12, 2026'
+  },
+  {
+    id: 15,
+    name: 'Alhijra Somali Community Association',
+    location: 'London, England',
+    region: 'London',
+    category: 'Welfare',
+    members: 190,
+    imageUrl: getCommunityImage(15),
+    description: 'Providing support and services to the Somali community in North London.',
+    slug: 'alhijra-somali',
+    established: '2005',
+    meetingLocation: '85 St Ann’s Road, London N15 6NJ',
+    contact: {
+      email: 'info@alhijra.org',
+      phone: '020 8800 9007',
+      whatsapp: '+44 7888 999000'
+    },
+    activities: ['Integration support', 'Elderly care', 'Youth programs', 'Cultural events'],
+    nextEvent: 'Community Iftar - April 15, 2026'
+  },
+  {
+    id: 16,
+    name: 'Bangladeshi Community Association (Keighley)',
+    location: 'Keighley, West Yorkshire',
+    region: 'North England',
+    category: 'Cultural',
+    members: 220,
+    imageUrl: getCommunityImage(16),
+    description: 'Serving the Bangladeshi community in Keighley and surrounding areas.',
+    slug: 'bca-keighley',
+    established: '1990',
+    meetingLocation: 'Kensington Street, Keighley, West Yorkshire BD21 1PW',
+    contact: {
+      email: 'info@bcakeighley.org',
+      phone: '01535 604359',
+      whatsapp: '+44 7771 234567'
+    },
+    activities: ['Cultural festivals', 'Community support', 'Welfare advice', 'Social events'],
+    nextEvent: 'Victory Day Celebration - December 16, 2025'
+  },
+  {
+    id: 17,
+    name: 'Igbo Union Stoke on Trent',
+    location: 'Stoke-on-Trent, Staffordshire',
+    region: 'West Midlands',
+    category: 'Cultural',
+    members: 130,
+    imageUrl: getCommunityImage(17),
+    description: 'Promoting Igbo culture and unity in Stoke-on-Trent.',
+    slug: 'igbo-stoke',
+    established: '2014',
+    meetingLocation: 'Various locations in Stoke-on-Trent',
+    contact: {
+      email: 'info@igbounionstoke.co.uk',
+      phone: '+44 7912 345678',
+      whatsapp: '+44 7912 345678'
+    },
+    activities: ['Cultural events', 'Community gatherings', 'Youth programs', 'Social support'],
+    nextEvent: 'Annual Family Fun Day - July 26, 2025'
+  },
+  {
+    id: 18,
+    name: 'Igbo Union Essex and Suffolk',
+    location: 'Essex & Suffolk',
+    region: 'East of England',
+    category: 'Cultural',
+    members: 175,
+    imageUrl: getCommunityImage(18),
+    description: 'Connecting the Igbo diaspora across Essex and Suffolk.',
+    slug: 'igbo-essex-suffolk',
+    established: '2016',
+    meetingLocation: 'Rotating venues in Essex and Suffolk',
+    contact: {
+      email: 'secretary@igbounionessexandsuffolk.co.uk',
+      phone: '+44 7854 765432',
+      whatsapp: '+44 7854 765432'
+    },
+    activities: ['Cultural celebrations', 'Networking events', 'Community support', 'Family gatherings'],
+    nextEvent: 'End of Year Party - December 20, 2025'
+  },
+  {
+    id: 19,
+    name: 'Somali Community Centre (Gospel Oak)',
+    location: 'London, England',
+    region: 'London',
+    category: 'Welfare',
+    members: 210,
+    imageUrl: getCommunityImage(19),
+    description: 'A hub for the Somali community in Gospel Oak, providing essential services.',
+    slug: 'somali-gospeloak',
+    established: '1998',
+    meetingLocation: '1-2 Lismore Circus, Gospel Oak, London NW5 4QF',
+    contact: {
+      email: 'info@somalicentre.org',
+      phone: '020 7485 9217',
+      whatsapp: '+44 7909 876543'
+    },
+    activities: ['Community support', 'Youth services', 'Elderly care', 'Cultural events'],
+    nextEvent: 'Health and Wellbeing Fair - June 5, 2026'
+  },
+  {
+    id: 20,
+    name: 'Kulan Somali Organisation (KSO)',
+    location: 'London, England',
+    region: 'London',
+    category: 'Welfare',
+    members: 310,
+    imageUrl: getCommunityImage(20),
+    description: 'Empowering the Somali community through integration, education, and development programs.',
+    slug: 'kulan-kso',
+    established: '2004',
+    meetingLocation: 'S.O.B.U.S Centre, 196 Freston Road, London W10 6TT',
+    contact: {
+      email: 'info@kulankso.org',
+      phone: '07737 218591',
+      whatsapp: '07956 882066'
+    },
+    activities: ['Integration programs', 'Educational workshops', 'Youth mentoring', 'Community development'],
+    nextEvent: 'Annual Achievement Awards - March 15, 2026'
+  }
+]
+
+const categories = ['All', 'Cultural', 'Business', 'National Organization', 'Welfare', 'Religious']
+const regions = ['All', 'Wales', 'London', 'North West England', 'North England', 'West Midlands', 'East of England']
+
+export default function CommunitiesHome() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedRegion, setSelectedRegion] = useState('All')
+
+  const filteredCommunities = allCommunities.filter(community => {
+    const matchesSearch = community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         community.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         community.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'All' || community.category === selectedCategory
+    const matchesRegion = selectedRegion === 'All' || community.region === selectedRegion
+    
+    return matchesSearch && matchesCategory && matchesRegion
+  })
+
+  const totalMembers = allCommunities.reduce((sum, community) => sum + community.members, 0)
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Enhanced Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-violet-800 to-purple-900"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-violet-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+          <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+          
+          {/* Floating Elements */}
+          <div className="absolute top-32 left-1/4 animate-float">
+            <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center transform rotate-12">
+              <Users className="w-8 h-8 text-white/80" />
+            </div>
+          </div>
+          <div className="absolute top-48 right-1/4 animate-float animation-delay-1000">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-12">
+              <MapPin className="w-6 h-6 text-white/80" />
+            </div>
+          </div>
+          <div className="absolute top-64 left-1/6 animate-float animation-delay-2000">
+            <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center transform rotate-6">
+              <Calendar className="w-7 h-7 text-white/80" />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6 py-20">
+          {/* Header Content */}
+          <div className="text-center text-white mb-16">
+            {/* Community Stats Banner */}
+            <div className="inline-flex items-center gap-8 bg-white/10 backdrop-blur-sm rounded-full px-8 py-4 mb-8 border border-white/20">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">{allCommunities.length} Active Communities</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="text-sm font-medium">{totalMembers.toLocaleString()}+ Members</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm font-medium">15+ Cities</span>
+              </div>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-8 leading-tight">
+              Discover Your
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white">
+                Community
+              </span>
+            </h1>
+
+            {/* Enhanced Search - Immediately after heading */}
+            <div className="max-w-5xl mx-auto mb-12">
+              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+                <div className="relative mb-8">
+                  <Search className="absolute left-8 top-1/2 transform -translate-y-1/2 text-gray-400 w-7 h-7" />
+                  <input
+                    type="text"
+                    placeholder="Search communities by name, location, or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-20 pr-8 py-6 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-4 focus:ring-white/20 focus:border-white/50 text-xl font-medium"
+                  />
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    <div className="bg-white/20 rounded-lg px-3 py-1 text-white/80 text-sm font-medium">
+                      ⌘K
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Category
+                    </label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white focus:outline-none focus:ring-4 focus:ring-white/20 focus:border-white/50 font-medium appearance-none cursor-pointer"
+                    >
+                      <option value="All" className="bg-purple-900 text-white">All Categories</option>
+                      <option value="Cultural" className="bg-purple-900 text-white">Cultural</option>
+                      <option value="Religious" className="bg-purple-900 text-white">Religious</option>
+                      <option value="Welfare" className="bg-purple-900 text-white">Welfare & Support</option>
+                      <option value="Professional" className="bg-purple-900 text-white">Professional</option>
+                      <option value="Youth" className="bg-purple-900 text-white">Youth</option>
+                      <option value="Sports" className="bg-purple-900 text-white">Sports & Recreation</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Region
+                    </label>
+                    <select
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white focus:outline-none focus:ring-4 focus:ring-white/20 focus:border-white/50 font-medium appearance-none cursor-pointer"
+                    >
+                      <option value="All" className="bg-purple-900 text-white">All Regions</option>
+                      <option value="London" className="bg-purple-900 text-white">London</option>
+                      <option value="Wales" className="bg-purple-900 text-white">Wales</option>
+                      <option value="Scotland" className="bg-purple-900 text-white">Scotland</option>
+                      <option value="North England" className="bg-purple-900 text-white">North England</option>
+                      <option value="Midlands" className="bg-purple-900 text-white">Midlands</option>
+                      <option value="South England" className="bg-purple-900 text-white">South England</option>
+                      <option value="North West England" className="bg-purple-900 text-white">North West England</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Search Results Count */}
+                <div className="mt-6 text-center text-white/80 text-sm font-medium">
+                  {filteredCommunities.length} {filteredCommunities.length === 1 ? 'community' : 'communities'} found
+                </div>
+              </div>
+            </div>
+
+            {/* Descriptive text after search */}
+            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto leading-relaxed mb-4">
+              Connect with verified, vibrant communities across the UK and beyond
+            </p>
+            
+            <p className="text-purple-200 max-w-2xl mx-auto mb-12">
+              From cultural celebrations to business networking, find your tribe and build meaningful connections. By bringing organisations together and making it easier to meet, we foster social cohesion, encourage inclusion, and support integration in local communities.
+            </p>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">15+</div>
+                <div className="text-purple-200 text-sm">UK Cities</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">500+</div>
+                <div className="text-purple-200 text-sm">Events/Year</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">98%</div>
+                <div className="text-purple-200 text-sm">Verified</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">24/7</div>
+                <div className="text-purple-200 text-sm">Community</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Wave Separator */}
+        <div className="absolute bottom-0 left-0 w-full">
+          <svg viewBox="0 0 1440 120" className="w-full h-auto fill-white">
+            <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+          </svg>
+        </div>
+      </section>
+
+      {/* Communities Grid */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          {/* Results Header */}
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                {filteredCommunities.length} Communities Found
+              </h2>
+              <p className="text-gray-600">
+                Discover vibrant communities across the globe
+              </p>
+            </div>
+            <Link href="/collaboration-analytics" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-purple-200 text-purple-700 hover:bg-purple-50 font-semibold">
+              <Handshake className="w-4 h-4" />
+              See Collaborations
+            </Link>
+          </div>
+
+          {/* Communities Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {filteredCommunities.map((community) => (
+              <Link
+                key={community.id}
+                href={`/c/${community.slug}`}
+                className="group block"
+              >
+                <div className="bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 border border-gray-100">
+                  
+                  {/* High-Quality Image */}
+                  <div className="relative h-72 overflow-hidden">
+                    <img 
+                      src={community.imageUrl}
+                      alt={`${community.name} - ${community.location}`}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    
+                    {/* Category Badge */}
+                    <div className="absolute top-6 right-6">
+                      <span className="inline-flex items-center px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-medium">
+                        {community.category}
+                      </span>
+                    </div>
+                    
+                    {/* Member Count */}
+                    <div className="absolute bottom-6 left-6">
+                      <span className="inline-flex items-center px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-bold text-gray-900">
+                        <Users className="w-4 h-4 mr-2" />
+                        {community.members} Members
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Card Content */}
+                  <div className="p-8">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors mb-2">
+                          {community.name}
+                        </h3>
+                        <div className="flex items-center text-gray-500 mb-2">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          <span>{community.location}</span>
+                        </div>
+                        <div className="text-sm text-purple-600 font-medium">
+                          Established {community.established}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {community.description}
+                    </p>
+
+                    {/* Contact Info */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="flex space-x-3">
+                        {community.contact.phone && (
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <Phone className="w-4 h-4 text-green-600" />
+                          </div>
+                        )}
+                        {community.contact.email && (
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Mail className="w-4 h-4 text-blue-600" />
+                          </div>
+                        )}
+                        {community.contact.whatsapp && (
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <MessageSquare className="w-4 h-4 text-green-600" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center text-purple-600 font-bold group-hover:text-purple-700">
+                        <span>Join Community</span>
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

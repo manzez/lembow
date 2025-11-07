@@ -12,10 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
+      <body className="min-h-screen bg-white text-gray-900 antialiased">
         <ClientProviders>
           <SiteHeader />
-          <main>{children}</main>
+          <main className="min-h-screen">{children}</main>
           <SiteFooter />
         </ClientProviders>
       </body>

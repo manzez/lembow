@@ -1,7 +1,7 @@
 'use client'
 import { ThemeProvider } from './ThemeProvider'
 import { ToastProvider } from './Toast'
-import MobileNavigation from './MobileNavigation'
+import { AuthProvider } from '../../contexts/AuthContext'
 
 interface ClientProvidersProps {
   children: React.ReactNode
@@ -10,10 +10,11 @@ interface ClientProvidersProps {
 export default function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <MobileNavigation />
-        {children}
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </AuthProvider>
     </ThemeProvider>
   )
 }

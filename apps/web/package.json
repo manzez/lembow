@@ -9,8 +9,12 @@
     "lint": "echo \"lint ok\""
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
+    "lucide-react": "^0.552.0",
     "next": "^15.0.0",
+    "openai": "^6.8.0",
     "react": "18.3.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "18.3.1",
     "tailwindcss": "^3.4.13",
     "zustand": "^4.5.4"
